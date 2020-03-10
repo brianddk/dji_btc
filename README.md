@@ -1,11 +1,15 @@
 # dji_btc
 Dow Jones Industrial Average in terms of BTC instead of USD
 
-### usage
+### Usage
 
 ```bash
 python3 dji_btc.py > dji_btc.csv
 ```
+
+### Note 
+* Negative slope means "strong BTC"
+* Positive slope means "strong DJI"
 
 ### YTD
 
