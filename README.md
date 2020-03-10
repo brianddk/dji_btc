@@ -15,7 +15,7 @@ python3 dji_btc.py > dji_btc.csv
 
 ![](1_year.jpg)
 
-### YTD
+### 3 Year
 
 ![](3_year.jpg)
 
