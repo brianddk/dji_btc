@@ -7,6 +7,18 @@ Dow Jones Industrial Average in terms of BTC instead of USD
 python3 dji_btc.py > dji_btc.csv
 ```
 
+### YTD
+
+![](ytd.jpg)
+
+### 1 Year
+
+![](1_year.jpg)
+
+### YTD
+
+![](3_year.jpg)
+
 #### Tips
 <details>
 <summary>Expand for tip addresses</summary>
