@@ -11,6 +11,10 @@ python3 dji_btc.py > dji_btc.csv
 * Negative slope means "strong BTC"
 * Positive slope means "strong DJI"
 
+### 1 Month
+
+![](1_month.jpg)
+
 ### YTD
 
 ![](ytd.jpg)
@@ -22,6 +26,10 @@ python3 dji_btc.py > dji_btc.csv
 ### 3 Year
 
 ![](3_year.jpg)
+
+### 5 Year
+
+![](5_year.jpg)
 
 #### Tips
 <details>

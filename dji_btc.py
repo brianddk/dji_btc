@@ -3,7 +3,7 @@
 # [repo]    https://github.com/brianddk/dji_btc
 # [btc]     BTC-b32: bc1qwc2203uym96u0nmq04pcgqfs9ldqz9l3mz8fpj
 # [tipjar]  https://gist.github.com/brianddk/3ec16fbf1d008ea290b0
-# [ref]     https://finance.yahoo.com/quote/%5EDJI/history?p=^DJI
+# [ref]     https://finance.yahoo.com/quote/^DJI/history
 # [post]    https://redd.it/ffyta8/
 # [usage]   python3 dji_btc.py > dji_btc.csv
 
@@ -35,34 +35,46 @@ with open('daily_dji.csv') as f:
 for d in history:
     if 'Date' in d or 'null' in d: continue
     day = d.strip().split(',')
-    y, m, d = day[0].split('-')
-    if not y in dji_history.keys(): dji_history[y] = {}
-    if not m in dji_history[y].keys(): dji_history[y][m] = {}    
-    dji_history[y][m][d] = day
+    date = day[0].strip()
+    dji_history[date] = day
 
 url = 'https://api.pro.coinbase.com/'
 auth = CoinbaseExchangePublic()
 day=86400
 params = dict(granularity = day)
-print(f'Date, Mid, High, Low')
+dji_btc = []
 while True:
     r = get(url + 'products/BTC-GBP/candles', auth=auth, params=params)
     candles = r.json()
     if not len(candles):
         break
-    for candle in candles:
-        btc_ts, btc_low, btc_high, _, _, _ = candle
-        ts = dt.utcfromtimestamp(btc_ts)
-        d = f'{ts.day:02}'
-        m = f'{ts.month:02}'
-        y = f'{ts.year}'
-        if d in dji_history[y][m].keys():
-            dji_date, _, dji_high, dji_low, _, _, _ = dji_history[y][m][d]
-            high = float(dji_high) / float(btc_low)
-            low  = float(dji_low) / float(btc_high)
-            mid = (high + low)/2
-            print(f'{dji_date}, {mid}, {high}, {low}')
-        
     start = candles[-1][0]
     params['end']   = dt.utcfromtimestamp(start - day).isoformat()
     params['start'] = dt.utcfromtimestamp(start - day * len(candles)).isoformat()
+    for candle in candles:
+        btc_ts, btc_low, btc_high = [float(i) for i in candle[0:3]]
+        ts = dt.utcfromtimestamp(btc_ts)
+        date = f'{ts.year}-{ts.month:02}-{ts.day:02}'
+        if date in dji_history.keys():
+            dji_high, dji_low = [float(i) for i in dji_history[date][2:4]]
+            high = dji_high / btc_low
+            low  = dji_low / btc_high
+            mid = (dji_high + dji_low)/(btc_high + btc_low)
+            dji_btc.append([date, mid, high, low])
+        
+end = len(dji_btc) - 1
+ma = 25 # moving average window (above and below) for std. deviation
+max_dev = 2  # reject data more than this man SD's off mean
+print(f'Date, Mid, High, Low')
+for i in range(0, end+1):
+    item = dji_btc[i]
+    low, high = [i - ma, i + ma]
+    if low < 0: low, high = [0, 2*ma]
+    if high > end: low, high = [end-2*ma, end]
+    set = [j[1] for j in dji_btc[low:high+1]]
+    mean = sum(set) / len(set)
+    s2 = sum([(j-mean)**2 for j in set]) * 1/(len(set) - 1)
+    std_dev = s2**(1/2)
+    cur_dev = abs(item[1] - mean)
+    if cur_dev/std_dev < max_dev:
+        print(f'{item[0]}, {item[1]}, {item[2]}, {item[3]}')
